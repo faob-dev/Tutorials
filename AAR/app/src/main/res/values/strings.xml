@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AAR</string>
+    <string name="lib_description">My awesome AAR library</string>
+</resources>
