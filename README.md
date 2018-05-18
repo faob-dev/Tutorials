@@ -8,6 +8,7 @@ Clone repo and open specific tutorial in your favourite IDE with gradle support
 * T4 : Handling C++ callbacks, Logging and exceptions with Java Native Access (JNA)
 * T5 : Mapping primitive, structure, array, NIO buffer, class and object types with Java Native Access (JNA)
 * T6 : Image processing android app with Java Native Access (JNA)
+* AAR : Creating Android Archive (AAR), publishing to jCenter and using it in android project
 
 # Author #
 
