@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MavenAAR</string>
+    <string name="lib_description">My awesome MavenAAR library</string>
+</resources>

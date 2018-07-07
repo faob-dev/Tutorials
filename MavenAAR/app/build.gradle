@@ -1,0 +1,158 @@
+plugins {
+    id "com.github.dcendents.android-maven" version "2.1"
+}
+apply plugin: 'com.android.library'
+apply plugin: 'signing'
+apply plugin: 'maven-publish'
+
+def groupIdX = 'io.github.faob-dev'
+def artifactIdX = 'maven-aar'
+def versionX = '1.0.0'
+
+group groupIdX
+version versionX
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        archivesBaseName = artifactIdX
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0-alpha3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+
+task sourcesJar(type: Jar) {
+    classifier "sources"
+    from android.sourceSets.main.java.srcDirs
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            name 'MavenAAR'
+            description 'Android aar library'
+            url 'https://github.com/faob-dev/Tutorials'
+            licenses {
+                license {
+                    name 'MIT License'
+                    url 'http://www.opensource.org/licenses/mit-license.php'
+                }
+            }
+            scm {
+                url 'https://github.com/faob-dev/Tutorials'
+            }
+            developers {
+                developer {
+                    id 'faob'
+                    name 'FaoB'
+                }
+            }
+        }
+    }
+}
+
+Properties props = new Properties()
+props.load(project.rootProject.file('local.properties').newDataInputStream())
+
+ext."signing.keyId" = props.getProperty("signing.keyId")
+ext."signing.password" = props.getProperty("signing.password")
+ext."signing.secretKeyRingFile" = props.getProperty("signing.secretKeyRingFile")
+
+task signArtifacts(dependsOn: install) {
+    signing.sign configurations.archives
+    doLast {
+        signing.sign file("${buildDir}/poms/pom-default.xml")
+    }
+}
+
+publishing {
+    publications {
+        mavenAAR(MavenPublication) {
+            groupId groupIdX
+            artifactId artifactIdX
+            version versionX
+
+            artifact(sourcesJar)
+            artifact(file("$buildDir/libs/$artifactIdX-$versionX-sources.jar.asc")) {
+                classifier = 'sources'
+                extension = 'jar.asc'
+            }
+
+            artifact(javadocJar)
+            artifact(file("$buildDir/libs/$artifactIdX-$versionX-javadoc.jar.asc")) {
+                classifier = 'javadoc'
+                extension = 'jar.asc'
+            }
+
+            artifact("$buildDir/outputs/aar/$artifactIdX-release.aar")
+            artifact(file("$buildDir/outputs/aar/$artifactIdX-release.aar.asc")) {
+                classifier = null
+                extension = 'aar.asc'
+            }
+
+            artifact(file("${buildDir}/poms/pom-default.xml.asc")) {
+                classifier = null
+                extension = 'pom.asc'
+            }
+        }
+    }
+    repositories {
+        maven {
+            url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            credentials {
+                username props.getProperty('sonatype.username')
+                password props.getProperty('sonatype.password')
+            }
+        }
+    }
+}
+
+model {
+    tasks.generatePomFileForMavenAARPublication {
+        destination = file("${project.buildDir}/poms/pom-default.xml")
+        onlyIf {
+            false
+        }
+    }
+}
