@@ -19,4 +19,4 @@ Clone repo and open specific tutorial in your favourite IDE with gradle support
 # Author #
 
 FaoB  
-https://busy.org/@kabooom
+
